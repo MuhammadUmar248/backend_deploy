@@ -12,3 +12,8 @@ DATABASE_NAME = "doctor_Management"
 client = AsyncIOMotorClient(MONGODB_URL, tls=True, tlsCAFile=certifi.where())
 database = client[DATABASE_NAME]
 doctor_collection = database["doctor"]
+patient_collection = database["patient"]
+prescription_collection = database["prescription"]
+
+
+

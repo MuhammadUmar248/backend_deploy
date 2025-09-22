@@ -1,6 +1,8 @@
 from fastapi import APIRouter, HTTPException,status
-from mongodb.connection import client, doctor_collection
+from mongodb.connection import client, doctor_collection, patient_collection,prescription_collection
 from model.doctor import CreateDoctor, DoctorLogin
+from model.patient import PatientResponse, CreatePatient
+from model.prescription import  CreatePrescription
 from utils.dependency import hash_password, verify_password
 from datetime import datetime
 
@@ -109,3 +111,90 @@ async def login_doctor(credentials: DoctorLogin):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Login failed"
         )
+
+
+@router.post("/createPatient", response_model=dict, status_code=status.HTTP_201_CREATED)
+async def create_patient(patient: CreatePatient):
+
+    try:
+        # Check if user already exists
+        existing_patient = await patient_collection.find_one({
+            "$or": [
+                {"email": patient.email.lower()},
+                {"username": patient.username.lower()}
+            ]
+        })
+        print(f"Existing doctor found: {existing_patient}")
+        if existing_patient:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User with this email or username already exists"
+            )
+
+            # Create user document
+        current_time = int(datetime.now().timestamp())
+        patient_dict = {
+            " doctor_id": patient.doctor_id,
+            "username": patient.username.lower(),
+            "email": patient.email.lower(),
+            "PhoneNumber": patient.PhoneNumber,
+            "age": patient.age,
+            "gender": patient.gender,
+            "weight": patient.weight,
+            "created_at": current_time,
+            "updated_at": current_time
+        }
+
+        # Insert into database
+        result = await patient_collection.insert_one(patient_dict)
+
+        return {
+            "message": "Patient registered successfully",
+            "Patient_id": str(result.inserted_id),
+            "status": "success"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error during registration: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Registration failed"
+        )
+
+
+@router.post("/createPrescription", response_model=dict, status_code=status.HTTP_201_CREATED)
+async def create_prescription(prescription: CreatePrescription):
+
+    try:
+        current_time = int(datetime.now().timestamp())
+
+        medicines_list = [med.model_dump() for med in prescription.medicines]
+        prescription_dict = {
+            " doctor_id": prescription.doctor_id,
+            " patient_id": prescription.patient_id,
+            "symptoms":prescription.symptoms,
+            "medicines": medicines_list,
+            "notes": prescription.notes,
+            "follow_up_days": prescription.follow_up_days,
+            "created_at": current_time,
+            "updated_at": current_time
+        }
+
+        # Insert into database
+        result = await prescription_collection.insert_one(prescription_dict)
+
+        return {
+            "message": "Prescription created successfully",
+            "Prescription": str(result.inserted_id),
+            "status": "success"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error during registration: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Registration failed"
+        )
+
