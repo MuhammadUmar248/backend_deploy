@@ -1,12 +1,13 @@
-from passlib.context import CryptContext
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from utils.jwt import verify_access_token
 
-# Create password context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# No tokenUrl needed here
+security = HTTPBearer()
 
-def hash_password(password: str) -> str:
-    """Hash a password using bcrypt"""
-    return pwd_context.hash(password)
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a password against its hash"""
-    return pwd_context.verify(plain_password, hashed_password)
+async def get_current_doctor(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    token = credentials.credentials  # Extract token string
+    payload = verify_access_token(token)
+    if not payload:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+    return payload["doctor_id"]

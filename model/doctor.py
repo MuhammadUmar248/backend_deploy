@@ -47,9 +47,14 @@ class DoctorLogin(BaseModel):
     password: str
 
 class DoctorResponse(CreateDoctor):
-    id: str
+    username: str
+    email: EmailStr
     created_at: int
     updated_at: int
+
+class DoctorUpdate(CreateDoctor):
+    username: Optional[str]
+    email: Optional[EmailStr]
 
 class Token(BaseModel):
     access_token: str

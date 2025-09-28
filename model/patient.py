@@ -4,7 +4,6 @@ import re
 
 
 class CreatePatient(BaseModel):
-    doctor_id: str = Field(..., min_length=5, max_length=50)
     username: str =  Field(min_length=3, max_length=30)
     email: EmailStr
     PhoneNumber: str = Field(min_length=11, max_length=11)
@@ -63,8 +62,20 @@ class CreatePatient(BaseModel):
             raise ValueError("Gender must not exceed 10 characters")
         return value
 
+class UpdatePatient(CreatePatient):
+    username: Optional[str]
+    email: Optional[EmailStr]
+    PhoneNumber: Optional[str]
+    age: Optional[int]
+    gender: Optional[str]
+    weight: Optional[float]
+
 class PatientResponse(CreatePatient):
-    id: str
     username: str
+    email: EmailStr
+    PhoneNumber: str
+    age: int
+    gender: str
+    weight: int
     created_at: int
     updated_at: int
