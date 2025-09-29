@@ -41,6 +41,9 @@ async def register_doctor(doctor:CreateDoctor):
         }
         # Insert into database
         result = await doctor_collection.insert_one(doctor_dict)
+        print("Login attempt for:", credentials.email)
+        print("Doctor found:", bool(doctor))
+        print("Password hash:", doctor.get("password"))
 
         return {
             "message": "User registered successfully",
