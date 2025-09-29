@@ -12,6 +12,10 @@ router = APIRouter()
 
 @router.post("/register", response_model=dict, status_code=status.HTTP_201_CREATED)
 async def register_doctor(doctor:CreateDoctor):
+    print("Login attempt for:", credentials.email)
+    print("Doctor found:", bool(doctor))
+    print("Password hash:", doctor.get("password"))
+
     try:
         # Check if user already exists
         existing_doctor = await doctor_collection.find_one({
@@ -41,9 +45,6 @@ async def register_doctor(doctor:CreateDoctor):
         }
         # Insert into database
         result = await doctor_collection.insert_one(doctor_dict)
-        print("Login attempt for:", credentials.email)
-        print("Doctor found:", bool(doctor))
-        print("Password hash:", doctor.get("password"))
 
         return {
             "message": "User registered successfully",
